@@ -4,6 +4,7 @@ import { useLinkBuilder, useTheme } from '@react-navigation/native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { View, Text } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
+import Icon from '@react-native-vector-icons/ionicons';
 import { HomeScreen } from '../../App';
 import { RecipeScreen } from '../pages/Recipe';
 import { FavoritesScreen } from '../pages/Favorites';
@@ -13,7 +14,7 @@ const MyTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const { buildHref } = useLinkBuilder();
 
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', height: 50, paddingHorizontal: 10 }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', height: 75, paddingHorizontal: 10 }}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -53,8 +54,9 @@ const MyTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
             testID={options.tabBarButtonTestID}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={{ alignSelf: 'center', backgroundColor: "red" }}
+            style={{ alignSelf: 'center', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}
           >
+            <Icon name="home-outline" size={24} color="black"/>
             <Text style={{ color: isFocused ? colors.primary : colors.text }}>
               {label}
             </Text>
