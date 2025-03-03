@@ -1,15 +1,23 @@
 import React from 'react';
 import { BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { View } from 'react-native';
+import { Button, View } from 'react-native';
 import { HomeScreen } from '../../App';
-import { RecipeScreen } from '../pages/Recipe';
 import { FavoritesScreen } from '../pages/Favorites';
 import { TabBarItem } from './components/TabBarItem';
+import RecipeStack from './RecipeStack';
+import { useNavigation } from '@react-navigation/native';
 
 interface CustomTabNavigationOptions extends Omit<BottomTabNavigationOptions, 'tabBarIcon'> {
   iconName?: string;
 }
+
+export type BottomTabParamList = {
+  Home: undefined;
+  Recipes: { screen: string, name: string };
+  newRecipes: undefined;
+  Favorites: undefined;
+};
 
 const MyTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   return (
@@ -28,20 +36,42 @@ const MyTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   );
 };
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<BottomTabParamList>();
+
+const navigationButton = (navigation: any) => {
+  return (
+    <Button onPress={() => {
+      navigation.navigate('Recipes', {
+        screen: 'RecipeList',
+        name: 'Recipes',
+      });
+    }}
+      title="Back"
+      color="#000"
+    />
+  );
+};
 
 const MyTabs = () => {
+  const navigation = useNavigation();
   return (
-    <Tab.Navigator tabBar={props => <MyTabBar {...props} />}>
+    <Tab.Navigator tabBar={(props) => <MyTabBar {...props} />}>
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{ iconName: 'home-outline' } as CustomTabNavigationOptions}
       />
       <Tab.Screen
-        name="Recipe"
-        component={RecipeScreen}
-        options={{ iconName: 'book-outline' } as CustomTabNavigationOptions}
+        name="Recipes"
+        component={RecipeStack}
+        options={({ route }) => {
+          const { name, screen } = route.params || { name: 'Recipes' };
+          return {
+            headerTitle: name,
+            headerLeft: name !== 'Recipes' || screen === 'Recipe' ? () => navigationButton(navigation) : undefined,
+            iconName: 'book-outline',
+          } as CustomTabNavigationOptions;
+        }}
       />
       <Tab.Screen
         name="Favorites"

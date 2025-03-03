@@ -31,6 +31,12 @@ const Styles = (
         itemText: {
             fontSize: itemTextFontSize,
         },
+        box: {
+          height: 100,
+          backgroundColor: 'violet',
+          borderRadius: 20,
+          marginVertical: 64,
+        },
     });
 
 export default (
