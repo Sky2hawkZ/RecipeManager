@@ -55,7 +55,9 @@ const navigationButton = (navigation: any) => {
 const MyTabs = () => {
   const navigation = useNavigation();
   return (
-    <Tab.Navigator tabBar={(props) => <MyTabBar {...props} />}>
+    <Tab.Navigator
+      tabBar={(props) => <MyTabBar {...props} />}
+      screenOptions={{ headerShown: false }}>
       <Tab.Screen
         name="Home"
         component={HomeScreen}
