@@ -6,18 +6,12 @@ import { HomeScreen } from '../../App';
 import { FavoritesScreen } from '../pages/Favorites';
 import { TabBarItem } from './components/TabBarItem';
 import RecipeStack from './RecipeStack';
+import { BottomTabParamList } from './navigationData';
 import { useNavigation } from '@react-navigation/native';
 
 interface CustomTabNavigationOptions extends Omit<BottomTabNavigationOptions, 'tabBarIcon'> {
   iconName?: string;
 }
-
-export type BottomTabParamList = {
-  Home: undefined;
-  Recipes: { screen: string, name: string };
-  newRecipes: undefined;
-  Favorites: undefined;
-};
 
 const MyTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   return (

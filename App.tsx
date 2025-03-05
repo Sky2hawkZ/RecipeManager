@@ -12,17 +12,19 @@ import {
   Text,
   TouchableWithoutFeedback,
   View,
-  Dimensions,
-  LayoutChangeEvent,
 } from 'react-native';
-import MyTabs, { BottomTabParamList } from './src/navigation/MyTabs';
+import MyTabs from './src/navigation/MyTabs';
 import Animated, { ReduceMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import Icon from '@react-native-vector-icons/ionicons';
-import { RecipeStackParamList } from './src/hooks/useAppNavigation';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-type HomeScreenNavigationProp = CompositeNavigationProp<
+import LandingStack from './src/navigation/LandingStack';
+import CHeader from './src/components/molecules/CHeader';
+import { BottomTabParamList, RecipeStackParamList } from './src/navigation/navigationData';
+
+export type HomeScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList, 'Home'>,
   NativeStackNavigationProp<RecipeStackParamList>
 >;
@@ -32,7 +34,6 @@ export function HomeScreen(): React.JSX.Element {
   const buttonWidth = useSharedValue(60);
   const buttonHeight = useSharedValue(60);
   const buttonRadius = useSharedValue(30);
-  const [left, setLeft] = useState(10);
 
   const animateButton = async () => {
     buttonWidth.value = withRepeat(
@@ -55,25 +56,17 @@ export function HomeScreen(): React.JSX.Element {
       ReduceMotion.System);
   };
 
-  const onTitleLayout = (event: LayoutChangeEvent) => {
-    const { width } = event.nativeEvent.layout;
-    const screenWidth = Dimensions.get('window').width;
-    const calculatedLeft = (screenWidth - width) / 2;
-    setLeft(calculatedLeft);
-    console.log('Title width:', width);
-    console.log('Screen width:', screenWidth);
-    console.log('Calculated left:', calculatedLeft);
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={[styles.titleStyles, { left }]} onLayout={onTitleLayout}>Title!</Text>
-      <View style={styles.centeredView}>
+      <CHeader<BottomTabParamList>
+        title="Home"
+        hasTitle
+      />
+      <View style={styles.content}>
         <Text>Home Screen</Text>
       </View>
       <TouchableWithoutFeedback onPress={async () => {
         await animateButton();
-        console.log('Navigate to New Recipe');
         navigation.navigate('Recipes', {
           screen: 'NewRecipe',
           name: 'New Recipe',
@@ -93,26 +86,23 @@ export function HomeScreen(): React.JSX.Element {
 }
 
 export default function App() {
+  const [isLandingCompleted, setIsLandingCompleted] = useState<boolean>(true);
+
   return (
-    <NavigationContainer>
-      <MyTabs />
-    </NavigationContainer>
+    <GestureHandlerRootView>
+      <NavigationContainer>
+        {isLandingCompleted ? <MyTabs /> : <LandingStack />}
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleStyles: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    position: 'absolute',
-    top: 60, // TODO: Make Compatible with Android
-  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  centeredView: {
+  content: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
