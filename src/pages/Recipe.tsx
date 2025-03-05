@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import Icon from '@react-native-vector-icons/ionicons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RecipeStackParamList } from '../hooks/useAppNavigation';
+import { RecipeStackParamList } from '../navigation/navigationData';
 
 const RecipeScreen = () => {
     const navigation = useNavigation<NavigationProp<RecipeStackParamList>>();

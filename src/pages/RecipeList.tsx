@@ -1,7 +1,7 @@
-import { Text, View } from 'react-native';
+import { Text, View , StyleSheet} from 'react-native';
 import React from 'react';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RecipeStackParamList } from '../hooks/useAppNavigation';
+import { RecipeStackParamList } from '../navigation/navigationData';
 
 function RecipeListScreen() {
     const navigation = useNavigation<NavigationProp<RecipeStackParamList>>();
@@ -15,8 +15,6 @@ function RecipeListScreen() {
         </View>
     );
 }
-
-import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
