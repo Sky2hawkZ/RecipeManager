@@ -1,12 +1,13 @@
 export type BottomTabParamList = {
-  Home: undefined;
-  Recipes: { screen: string, name: string };
+  HomeScreen: {screen: string};
+  Recipes: {screen: string; name: string};
   newRecipes: undefined;
   Favorites: undefined;
+  Landing: undefined;
 };
 
 export type RecipeStackParamList = {
-    RecipeList: { screen: string, name?: string };
-    Recipe: undefined;
-    NewRecipe: undefined;
+  RecipeList: {screen: string; name?: string};
+  Recipe: undefined;
+  NewRecipe: undefined;
 };
