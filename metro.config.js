@@ -1,4 +1,5 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig } = require('expo/metro-config');
+const { mergeConfig } = require('@react-native/metro-config');
 
 /**
  * Metro configuration
@@ -11,6 +12,8 @@ const {
     wrapWithReanimatedMetroConfig,
   } = require('react-native-reanimated/metro-config');
 
-const config = {};
+const config = getDefaultConfig(__dirname);
+
+config.resolver.sourceExts.push('sql'); // <--- add this
 
 module.exports = wrapWithReanimatedMetroConfig(mergeConfig(getDefaultConfig(__dirname), config));

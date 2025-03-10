@@ -77,3 +77,8 @@ yarn-error.log
 node_modules
 
 # Prisma
+
+# Expo
+.expo
+dist/
+web-build/

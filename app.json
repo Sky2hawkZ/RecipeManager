@@ -1,4 +1,7 @@
 {
   "name": "ReceipeManager",
-  "displayName": "ReceipeManager"
+  "displayName": "ReceipeManager",
+  "plugins": [
+    "expo-sqlite"
+  ]
 }
