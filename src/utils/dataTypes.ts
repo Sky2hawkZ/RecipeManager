@@ -5,7 +5,7 @@ export type User = {
     isOnboarded: boolean | null;
 };
 
-export type RecipeData = {
+export type RecipeFormData = {
     name: string;
     image: string;
     description: string;
@@ -14,7 +14,21 @@ export type RecipeData = {
     cookTime: number;
     calories: number;
     favorite: boolean;
-    userId: number;
+    user: number;
+};
+
+
+export type RecipeData = {
+    id: number;
+    name: string;
+    image: string;
+    description: string;
+    numberOfServings: number;
+    prepTime: number;
+    cookTime: number;
+    calories: number;
+    favorite: boolean;
+    user: number;
 };
 
 export type IngredientData = {

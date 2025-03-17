@@ -1,21 +1,23 @@
 import React, {useState} from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Button,
-  ScrollView,
-  Text,
-} from 'react-native';
+import {View, TextInput, StyleSheet, ScrollView, Text} from 'react-native';
+import {Dropdown} from 'react-native-element-dropdown';
+
+import CustomButton from '../atoms/CButton';
 
 interface Ingredient {
   ingredient: string;
   amount: string;
   measurement: string;
-  inStock?: string;
+  inStock?: boolean;
 }
 
-const CIngredientInputRow = ({onChange}) => {
+interface CIngredientInputRowProps {
+  onChange: (ingredients: Ingredient[]) => void;
+}
+
+const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
+  onChange,
+}) => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([
     {ingredient: '', amount: '', measurement: ''},
   ]);
@@ -39,6 +41,16 @@ const CIngredientInputRow = ({onChange}) => {
     onChange(newIngredients);
   };
 
+  const dropDownData = [
+    {label: 'pcs', value: 'pcs'},
+    {label: 'krm', value: 'krm'},
+    {label: 'tsp', value: 'tsp'},
+    {label: 'tbsp', value: 'tbsp'},
+    {label: 'ml', value: 'ml'},
+    {label: 'cl', value: 'cl'},
+    {label: 'dl', value: 'dl'},
+  ];
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {ingredients.map((ingredient, index) => (
@@ -49,9 +61,11 @@ const CIngredientInputRow = ({onChange}) => {
             <Text>{index + 1}: </Text>
             <TextInput
               style={styles.nameInput}
-              placeholder="Name"
+              placeholder="Ingredient"
               value={ingredient.ingredient}
-              onChangeText={text => handleIngredientChange(index, 'name', text)}
+              onChangeText={text =>
+                handleIngredientChange(index, 'ingredient', text)
+              }
             />
             <TextInput
               style={styles.amountInput}
@@ -62,20 +76,22 @@ const CIngredientInputRow = ({onChange}) => {
               }
               keyboardType="numeric"
             />
-            <TextInput
-              style={styles.volumeInput}
-              placeholder="Volume"
+            <Dropdown
+              style={{width: '20%'}}
+              onChange={item => {
+                handleIngredientChange(index, 'measurement', item.value);
+              }}
+              placeholder="pcs"
+              data={dropDownData}
+              labelField={'label'}
+              valueField={'value'}
               value={ingredient.measurement}
-              onChangeText={text =>
-                handleIngredientChange(index, 'volume', text)
-              }
-              keyboardType="numeric"
             />
           </View>
         </View>
       ))}
-      <Button
-        title="Add Ingredient"
+      <CustomButton
+        label="Add Ingredient"
         onPress={handleAddIngredient}
       />
     </ScrollView>
@@ -123,9 +139,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     borderRadius: 4,
   },
-  checkBoxInput: {
-
-  },
+  checkBoxInput: {},
 });
 
 export default CIngredientInputRow;

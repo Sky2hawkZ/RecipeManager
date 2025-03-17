@@ -8,6 +8,6 @@ export type BottomTabParamList = {
 
 export type RecipeStackParamList = {
   RecipeList: {screen: string; name?: string};
-  Recipe: undefined;
+  Recipe: { recipeId?: number };
   NewRecipe: undefined;
 };

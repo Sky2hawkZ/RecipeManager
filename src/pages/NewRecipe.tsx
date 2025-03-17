@@ -3,27 +3,34 @@ import {
   Text,
   TextInput,
   View,
-  Button,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import React, {useState} from 'react';
 import Icon from '@react-native-vector-icons/ionicons';
+import {
+  ImageLibraryOptions,
+  launchImageLibrary,
+} from 'react-native-image-picker';
 
 import CHeader from '../components/molecules/CHeader';
 import {RecipeStackParamList} from '../navigation/navigationData';
 import {RecipeActions} from '../utils/db/recipeActions';
 import CIngredientInputRow from '../components/molecules/CIngredientInputRow';
+import CustomButton from '../components/atoms/CButton';
+import {saveImageToDocuments} from '../utils/fs/addImages';
 
 interface Ingredient {
   ingredient: string;
   amount: string;
   measurement: string;
-  inStock: boolean;
+  inStock?: boolean;
 }
 
 const NewRecipeScreen = () => {
   const [recipeName, setRecipeName] = useState('');
   const [recipeImage, setRecipeImage] = useState('');
+  const [recipeImagePreview, setRecipeImagePreview] = useState('');
   const [recipeDescription, setRecipeDescription] = useState('');
   const [numberOfServings, setNumberOfServings] = useState('');
   const [prepTime, setPrepTime] = useState('');
@@ -31,6 +38,40 @@ const NewRecipeScreen = () => {
   const [favorite, setFavorite] = useState(false);
   const [calories, setCalories] = useState('');
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+
+  const handleSelectImage = async () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      quality: 0.8, // Good quality but not too large
+      maxWidth: 800,
+      maxHeight: 800,
+    };
+
+    launchImageLibrary(options, async response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('Image picker error: ', response.errorMessage);
+      } else if (response.assets && response.assets.length > 0) {
+        const imageUri = response.assets[0].uri;
+
+        if (imageUri) {
+          // Set preview immediately for UX
+          setRecipeImagePreview(imageUri);
+
+          // Save to documents in background
+          const savedPath = await saveImageToDocuments(imageUri);
+          if (savedPath.destPath) {
+            // Store the permanent path
+            setRecipeImage(savedPath.destPath);
+          } else {
+            // Fallback to temporary path if saving fails
+            setRecipeImage(imageUri);
+          }
+        }
+      }
+    });
+  };
 
   const handleCreateRecipe = async () => {
     try {
@@ -43,17 +84,27 @@ const NewRecipeScreen = () => {
         cookTime: parseInt(cookTime, 10),
         favorite: favorite,
         calories: parseInt(calories, 10),
-        userId: 1, // Placeholder, update as needed
+        user: 28, // Placeholder, update as needed
       });
+
+      setRecipeName('');
+      setRecipeImage('');
+      setRecipeDescription('');
+      setNumberOfServings('');
+      setPrepTime('');
+      setCookTime('');
+      setFavorite(false);
+      setCalories('');
+      setIngredients([]);
 
       const newIngredients = await Promise.all(
         ingredients.map(ingredient =>
           RecipeActions.createIngredient({
-            recipe: 0, // TODO: FIX
+            recipe: newRecipe[0].id, // TODO: FIX
             amount: parseFloat(ingredient.amount),
-            inStock: ingredient.inStock,
             ingredient: ingredient.ingredient,
             measurement: ingredient.measurement,
+            inStock: ingredient.inStock ? ingredient.inStock : false,
           }),
         ),
       );
@@ -110,18 +161,25 @@ const NewRecipeScreen = () => {
           value={recipeName}
           onChangeText={setRecipeName}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Recipe Image URL"
-          value={recipeImage}
-          onChangeText={setRecipeImage}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Recipe Description"
-          value={recipeDescription}
-          onChangeText={setRecipeDescription}
-        />
+        <View style={styles.imagePickerContainer}>
+          {recipeImagePreview ? (
+            <Image
+              source={{uri: recipeImagePreview}}
+              style={styles.imagePreview}
+            />
+          ) : (
+            <TouchableOpacity
+              style={styles.imagePickerButton}
+              onPress={handleSelectImage}>
+              <Icon
+                name="camera-outline"
+                size={24}
+                color="#555"
+              />
+              <Text style={styles.imagePickerText}>Select Recipe Image</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <TextInput
           style={styles.input}
           placeholder="Number of Servings"
@@ -151,8 +209,8 @@ const NewRecipeScreen = () => {
           keyboardType="numeric"
         />
         <CIngredientInputRow onChange={setIngredients} />
-        <Button
-          title="Create Recipe"
+        <CustomButton
+          label="Create Recipe"
           onPress={handleCreateRecipe}
         />
       </View>
@@ -184,6 +242,33 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 4,
+  },
+  imagePickerContainer: {
+    marginVertical: 8,
+    alignItems: 'center',
+  },
+  imagePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 4,
+    padding: 12,
+    width: '100%',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  imagePickerText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#555',
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    marginTop: 12,
+    borderRadius: 4,
+    resizeMode: 'cover',
   },
 });
 
