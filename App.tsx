@@ -10,8 +10,8 @@ import {
   NavigationContainer,
   useNavigation,
 } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import {StyleSheet, Text, TouchableWithoutFeedback, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, Text, TouchableWithoutFeedback, useWindowDimensions, View} from 'react-native';
 import Animated, {
   ReduceMotion,
   useSharedValue,
@@ -31,12 +31,12 @@ import {
 import RootStack from './src/navigation/RootStack';
 
 import * as SQLite from 'expo-sqlite';
-import {drizzle, useLiveQuery} from 'drizzle-orm/expo-sqlite';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { eq } from 'drizzle-orm';
-import {user} from './db/schema';
+import {drizzle} from 'drizzle-orm/expo-sqlite';
+import {useMigrations} from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from './drizzle/migrations';
-import { getActiveUser } from './src/utils/db/userData';
+import {getActiveUser} from './src/utils/db/userData';
+import {getUserById} from './src/utils/db/dbActions';
+import {User} from './src/utils/dataTypes';
 
 export type HomeScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<BottomTabParamList>,
@@ -47,18 +47,19 @@ const database = SQLite.openDatabaseSync('db.db', {enableChangeListener: true});
 const db = drizzle(database);
 
 export function HomeScreen(): React.JSX.Element {
+  const { width: screenWidth } = useWindowDimensions();
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const buttonWidth = useSharedValue(60);
   const buttonHeight = useSharedValue(60);
   const buttonRadius = useSharedValue(30);
   const [userId, setUserId] = useState<number>(0);
+  const [LoggedInUser, setLoggedInUser] = useState<User>({
+    userId: 0,
+    userName: '',
+    userPreferences: '',
+    isOnboarded: false,
+  });
 
-
-  console.log('activeUserRecord: ', userId);
-
-  const {data} = useLiveQuery(db.select().from(user).where(eq(user.userId, userId)), [userId]);
-
-  console.log(data);
   useEffect(() => {
     const fetchUserId = async () => {
       const activeUser = await getActiveUser();
@@ -68,6 +69,17 @@ export function HomeScreen(): React.JSX.Element {
     };
 
     fetchUserId();
+  }, [userId]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const fetchedUser = await getUserById(userId);
+      if (fetchedUser) {
+        setLoggedInUser(fetchedUser);
+      }
+    };
+
+    fetchUser();
   }, [userId]);
 
   const animateButton = async () => {
@@ -101,12 +113,14 @@ export function HomeScreen(): React.JSX.Element {
         hasTitle
       />
       <View style={styles.content}>
-        <Text>Home Screen</Text>
-        {data?.map(person => (
-          <Text key={person.userId}>
-            {person.userName}, {person.userPreferences}
-          </Text>
-        ))}
+        <View style={[styles.contentContainer, { left: (screenWidth - 350) / 2 }]}>
+          <Text style={styles.heading}>Welcome, {LoggedInUser.userName} </Text>
+          <Text>This is your Home Screen</Text>
+          <Text>It's a work in progress! 🚧 </Text>
+        </View>
+        <View style={[styles.contentContainer, {top: 140, height: 200, left: (screenWidth - 350) / 2}]}>
+          <Text>There will be a favorite carousel here! 🚧</Text>
+        </View>
       </View>
       <TouchableWithoutFeedback
         onPress={async () => {
@@ -138,7 +152,7 @@ export function HomeScreen(): React.JSX.Element {
 export default function App() {
   useDrizzleStudio(database);
 
-  const { success, error } = useMigrations(db, migrations);
+  const {success, error} = useMigrations(db, migrations);
   if (error) {
     return (
       <View>
@@ -171,6 +185,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 120,
+    zIndex: 0,
+  },
+  contentContainer: {
+    backgroundColor: '#A9A9A9',
+    padding: 10,
+    width: 350,
+    height: 100,
+    position: 'absolute',
+    top: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0},
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  heading: {
+    fontSize: 30,
+    fontWeight: 700,
   },
   newRecipeButton: {
     backgroundColor: 'red',
@@ -180,6 +214,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     left: 20,
+    zIndex: 1,
   },
   RecipeIcon: {},
 });

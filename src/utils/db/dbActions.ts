@@ -2,6 +2,7 @@ import * as SQLite from 'expo-sqlite';
 import  { drizzle } from 'drizzle-orm/expo-sqlite';
 import { eq } from 'drizzle-orm';
 import { user } from '../../../db/schema';
+import { User } from '../dataTypes';
 
 // Assuming you have a db instance exported from a db fileimport { user } from '../../../db/schema';
 const database = SQLite.openDatabaseSync('db.db', { enableChangeListener: true });
@@ -21,9 +22,9 @@ export const createUser = async (userName: string, userPreferences: string, isOn
 };
 
 // Read a user by ID
-export const getUserById = async (userId: number) => {
+export const getUserById = async (userId: number): Promise<User> => {
   const foundUser = await db.select().from(user).where(eq(user.userId,userId));
-  return foundUser;
+  return foundUser[0];
 };
 
 // Update a user by ID

@@ -32,8 +32,6 @@ const RootStack = () => {
     fetchInitialRouteName();
   }, [initialRouteName]);
 
-  console.log('initialRouteName:', initialRouteName);
-
   if (initialRouteName === undefined) {
     // Optionally, you can render a loading screen or null while determining the initial route
     return null;

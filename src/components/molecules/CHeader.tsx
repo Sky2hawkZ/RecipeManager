@@ -57,19 +57,19 @@ const styles = StyleSheet.create({
         top: 60,
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 0,
+        zIndex: 10,
     },
     titleStyles: {
         fontSize: 20,
         fontWeight: 'bold',
         position: 'absolute',
         top: 18, // TODO: Make Compatible with Android
-        zIndex: 1,
+        zIndex: 10,
     },
     backIcon: {
         position: 'absolute',
         top: 8,
         left: 15,
-        zIndex: 1,
+        zIndex: 10,
     },
 });

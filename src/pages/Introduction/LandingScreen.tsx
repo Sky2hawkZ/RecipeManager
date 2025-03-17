@@ -56,8 +56,8 @@ const LandingScreen = () => {
             value="omnivorous"
           />
           <Picker.Item
-            label="Vegeterian"
-            value="vegeterian"
+            label="Vegetarian"
+            value="vegetarian"
           />
           <Picker.Item
             label="Vegan"
