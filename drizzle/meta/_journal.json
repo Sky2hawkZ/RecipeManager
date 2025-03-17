@@ -15,6 +15,34 @@
       "when": 1741602319644,
       "tag": "0001_unknown_shiver_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1741605078901,
+      "tag": "0002_friendly_metal_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1741949684931,
+      "tag": "0003_rapid_ezekiel",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1742203304755,
+      "tag": "0004_bizarre_the_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1742204155535,
+      "tag": "0005_tiresome_purple_man",
+      "breakpoints": true
     }
   ]
 }
