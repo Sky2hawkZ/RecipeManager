@@ -1,8 +1,6 @@
-import React, {useState} from 'react';
-import {View, TextInput, StyleSheet, ScrollView, Text} from 'react-native';
+import React from 'react';
+import {View, TextInput, StyleSheet, Text} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
-
-import CustomButton from '../atoms/CButton';
 
 interface Ingredient {
   ingredient: string;
@@ -12,22 +10,14 @@ interface Ingredient {
 }
 
 interface CIngredientInputRowProps {
+  ingredients: Ingredient[];
   onChange: (ingredients: Ingredient[]) => void;
 }
 
 const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
+  ingredients,
   onChange,
 }) => {
-  const [ingredients, setIngredients] = useState<Ingredient[]>([
-    {ingredient: '', amount: '', measurement: ''},
-  ]);
-
-  const handleAddIngredient = () => {
-    setIngredients([
-      ...ingredients,
-      {ingredient: '', amount: '', measurement: ''},
-    ]);
-  };
 
   const handleIngredientChange = (
     index: number,
@@ -37,7 +27,6 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
     const newIngredients = ingredients.map((ingredient, i) =>
       i === index ? {...ingredient, [field]: value} : ingredient,
     );
-    setIngredients(newIngredients);
     onChange(newIngredients);
   };
 
@@ -52,7 +41,7 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       {ingredients.map((ingredient, index) => (
         <View
           key={index}
@@ -90,11 +79,7 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
           </View>
         </View>
       ))}
-      <CustomButton
-        label="Add Ingredient"
-        onPress={handleAddIngredient}
-      />
-    </ScrollView>
+    </View>
   );
 };
 
@@ -102,6 +87,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 60,
   },
   row: {
     // backgroundColor: 'red',

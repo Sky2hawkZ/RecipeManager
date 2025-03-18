@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from 'react-native';
 import React, {useState} from 'react';
 import Icon from '@react-native-vector-icons/ionicons';
@@ -39,6 +40,13 @@ const NewRecipeScreen = () => {
   const [calories, setCalories] = useState('');
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
 
+  const handleAddIngredient = () => {
+    setIngredients([
+      ...ingredients,
+      {ingredient: '', amount: '', measurement: ''},
+    ]);
+  };
+
   const handleSelectImage = async () => {
     const options: ImageLibraryOptions = {
       mediaType: 'photo',
@@ -60,10 +68,10 @@ const NewRecipeScreen = () => {
           setRecipeImagePreview(imageUri);
 
           // Save to documents in background
-          const savedPath = await saveImageToDocuments(imageUri);
-          if (savedPath.destPath) {
+          const savedPath = await saveImageToDocuments(recipeName, imageUri);
+          if (savedPath.relativePath) {
             // Store the permanent path
-            setRecipeImage(savedPath.destPath);
+            setRecipeImage(savedPath.relativePath);
           } else {
             // Fallback to temporary path if saving fails
             setRecipeImage(imageUri);
@@ -141,7 +149,7 @@ const NewRecipeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <CHeader<RecipeStackParamList>
         title={'New Recipe'}
         hasTitle={true}
@@ -208,19 +216,36 @@ const NewRecipeScreen = () => {
           onChangeText={setCalories}
           keyboardType="numeric"
         />
-        <CIngredientInputRow onChange={setIngredients} />
-        <CustomButton
-          label="Create Recipe"
-          onPress={handleCreateRecipe}
+        <TextInput
+          style={[styles.input, {height: 100}]}
+          placeholder="Description"
+          value={recipeDescription}
+          onChangeText={setRecipeDescription}
+          multiline
+          numberOfLines={4}
         />
+        <CIngredientInputRow
+          onChange={setIngredients}
+          ingredients={ingredients}
+        />
+        <View
+          style={styles.buttonContainer}>
+          <CustomButton
+            label="Add Ingredient"
+            onPress={handleAddIngredient}
+          />
+          <CustomButton
+            label="Create Recipe"
+            onPress={handleCreateRecipe}
+          />
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
@@ -269,6 +294,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 4,
     resizeMode: 'cover',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: 350,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 
