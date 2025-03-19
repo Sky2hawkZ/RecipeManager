@@ -48,7 +48,6 @@ export const getImageSource = (imagePath: string): string => {
 
   // If path starts with a slash, it's relative to the document directory
   if (imagePath.startsWith('/')) {
-    console.log('Running correct path');
     return `${RNFS.DocumentDirectoryPath}${imagePath}`;
   }
 

@@ -34,7 +34,6 @@ const RecipeScreen = () => {
       }
       const recipeData = await RecipeActions.getRecipeById(recipeId);
       if (recipeData) {
-        console.log('image: ', recipeData.image);
         const typedData = {
           id: recipeData.id,
           name: recipeData.name || '', // Convert null to empty string

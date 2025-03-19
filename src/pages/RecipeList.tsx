@@ -49,6 +49,7 @@ function RecipeListScreen() {
       {/* Refactor RenderItem into a custom card component */}
       <FlatList
         style={styles.listWrapper}
+        showsVerticalScrollIndicator={false}
         data={memoizedData}
         keyExtractor={item => item.id.toString()}
         renderItem={({item}) => (
@@ -100,7 +101,8 @@ const styles = StyleSheet.create({
     marginTop: 120,
   },
   listWrapper: {
-    width: '80%',
+    width: '95%',
+    paddingHorizontal: 5,
   },
 
   // Card Styles

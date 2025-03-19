@@ -6,18 +6,51 @@ interface Ingredient {
   ingredient: string;
   amount: string;
   measurement: string;
-  inStock?: boolean;
+  inStock: boolean;
 }
 
 interface CIngredientInputRowProps {
   ingredients: Ingredient[];
   onChange: (ingredients: Ingredient[]) => void;
+  errors?: {[key: string]: string}; // Accept errors from parent
 }
 
 const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
   ingredients,
   onChange,
+  errors = {},
 }) => {
+  // Process errors to organize them by ingredient index
+  const processErrors = () => {
+    let generalErrors: string = '';
+    const fieldErrors: Record<number, Record<string, string>> = {};
+
+    Object.entries(errors).forEach(([key, errorMessage]) => {
+      // Check if key contains a dot (field-specific error)
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        if (parts.length === 2) {
+          const index = parseInt(parts[0], 10);
+          if (!isNaN(index)) {
+            // Field-specific error
+            if (!fieldErrors[index]) {
+              fieldErrors[index] = {};
+            }
+            fieldErrors[index][parts[1]] = errorMessage;
+          }
+        }
+      } else {
+        if(errorMessage !== null) {
+          generalErrors = errorMessage['0'];
+        }
+      }
+    });
+    console.log('generalErrors: ', generalErrors);
+    console.log('fieldErrors: ', fieldErrors);
+    return {generalErrors, fieldErrors};
+  };
+
+  const {generalErrors} = processErrors();
 
   const handleIngredientChange = (
     index: number,
@@ -42,43 +75,51 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
 
   return (
     <View style={styles.container}>
-      {ingredients.map((ingredient, index) => (
-        <View
-          key={index}
-          style={styles.row}>
-          <View style={styles.rowContainer}>
-            <Text>{index + 1}: </Text>
-            <TextInput
-              style={styles.nameInput}
-              placeholder="Ingredient"
-              value={ingredient.ingredient}
-              onChangeText={text =>
-                handleIngredientChange(index, 'ingredient', text)
-              }
-            />
-            <TextInput
-              style={styles.amountInput}
-              placeholder="Amount"
-              value={ingredient.amount}
-              onChangeText={text =>
-                handleIngredientChange(index, 'amount', text)
-              }
-              keyboardType="numeric"
-            />
-            <Dropdown
-              style={{width: '20%'}}
-              onChange={item => {
-                handleIngredientChange(index, 'measurement', item.value);
-              }}
-              placeholder="pcs"
-              data={dropDownData}
-              labelField={'label'}
-              valueField={'value'}
-              value={ingredient.measurement}
-            />
+      {ingredients.map((ingredient, index) => {
+        const hasGeneralError = generalErrors[index];
+        return (
+          <View
+            key={index}
+            style={styles.row}>
+            <View style={styles.rowContainer}>
+              <Text>{index + 1}: </Text>
+              <TextInput
+                style={styles.nameInput}
+                placeholder="Ingredient"
+                value={ingredient.ingredient}
+                onChangeText={text =>
+                  handleIngredientChange(index, 'ingredient', text)
+                }
+              />
+              <TextInput
+                style={styles.amountInput}
+                placeholder="Amount"
+                value={ingredient.amount}
+                onChangeText={text =>
+                  handleIngredientChange(index, 'amount', text)
+                }
+                keyboardType="numeric"
+              />
+              <Dropdown
+                style={{width: '20%'}}
+                onChange={item => {
+                  handleIngredientChange(index, 'measurement', item.value);
+                }}
+                placeholder="pcs"
+                data={dropDownData}
+                labelField={'label'}
+                valueField={'value'}
+                value={ingredient.measurement}
+              />
+            </View>
+            {hasGeneralError && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{generalErrors}</Text>
+              </View>
+            )}
           </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 };
@@ -95,6 +136,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.8,
     shadowRadius: 1,
+    height: 60,
   },
   rowContainer: {
     width: '100%',
@@ -126,6 +168,22 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   checkBoxInput: {},
+  inputError: {
+    borderBottomColor: 'red',
+    backgroundColor: '#ffcccc66',
+  },
+  dropdownError: {
+    borderColor: 'red',
+    backgroundColor: '#ffcccc66',
+  },
+  errorContainer: {
+    marginTop: 4,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 10,
+    marginTop: 2,
+  },
 });
 
 export default CIngredientInputRow;

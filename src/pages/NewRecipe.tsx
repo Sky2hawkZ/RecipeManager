@@ -20,12 +20,26 @@ import {RecipeActions} from '../utils/db/recipeActions';
 import CIngredientInputRow from '../components/molecules/CIngredientInputRow';
 import CustomButton from '../components/atoms/CButton';
 import {saveImageToDocuments} from '../utils/fs/addImages';
+import {
+  validateRecipeForm,
+  validateIngredientRows,
+} from '../utils/validations/newRecipeFormValidation';
 
 interface Ingredient {
   ingredient: string;
   amount: string;
   measurement: string;
-  inStock?: boolean;
+  inStock: boolean;
+}
+
+interface FormErrors {
+  recipeName?: string;
+  recipeImage?: string;
+  recipeDescription?: string;
+  numberOfServings?: string;
+  prepTime?: string;
+  cookTime?: string;
+  calories?: string;
 }
 
 const NewRecipeScreen = () => {
@@ -38,12 +52,14 @@ const NewRecipeScreen = () => {
   const [cookTime, setCookTime] = useState('');
   const [favorite, setFavorite] = useState(false);
   const [calories, setCalories] = useState('');
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [ingredientErrors, setIngredientErrors] = useState({});
 
   const handleAddIngredient = () => {
     setIngredients([
       ...ingredients,
-      {ingredient: '', amount: '', measurement: ''},
+      {ingredient: '', amount: '', measurement: 'pcs', inStock: false},
     ]);
   };
 
@@ -82,6 +98,46 @@ const NewRecipeScreen = () => {
   };
 
   const handleCreateRecipe = async () => {
+
+    // Validate ingredients first
+    let ingredientsValid = true;
+    let validatedIngredients = null;
+
+    const formData = {
+      recipeName,
+      recipeImage,
+      recipeDescription,
+      numberOfServings,
+      prepTime,
+      cookTime,
+      favorite,
+      calories,
+      ingredients,
+    };
+
+    // Validate the form data
+    const validationResult = validateRecipeForm(formData);
+
+    if (!validationResult.success) {
+      setFormErrors(validationResult.errors || {});
+    }
+
+    if (ingredients.length > 0) {
+      const ingredientValidationResult = validateIngredientRows(ingredients);
+      ingredientsValid = ingredientValidationResult.success;
+      if (!ingredientsValid) {
+        setIngredientErrors(ingredientValidationResult);
+      } else {
+        validatedIngredients = ingredientValidationResult;
+      }
+    }
+
+    if (!ingredientsValid) {
+      return;
+    } else if (!validationResult.success) {
+      return;
+    }
+
     try {
       const newRecipe = await RecipeActions.createRecipe({
         name: recipeName,
@@ -104,9 +160,14 @@ const NewRecipeScreen = () => {
       setFavorite(false);
       setCalories('');
       setIngredients([]);
+      setFormErrors({});
+      setIngredientErrors({});
+
+      // Use validatedIngredients if available, otherwise use ingredients
+      const ingredientsToSave = validatedIngredients?.data || ingredients;
 
       const newIngredients = await Promise.all(
-        ingredients.map(ingredient =>
+        ingredientsToSave.map(ingredient =>
           RecipeActions.createIngredient({
             recipe: newRecipe[0].id, // TODO: FIX
             amount: parseFloat(ingredient.amount),
@@ -119,6 +180,9 @@ const NewRecipeScreen = () => {
 
       console.log('Recipe and Ingredient created:', newRecipe, newIngredients);
     } catch (error) {
+      // Clear previous errors
+      setFormErrors({});
+      setIngredientErrors({});
       console.error('Error creating recipe and ingredient:', error);
     }
   };
@@ -163,12 +227,18 @@ const NewRecipeScreen = () => {
           <Text>New Recipe</Text>
           {renderFavorite()}
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Recipe Name"
-          value={recipeName}
-          onChangeText={setRecipeName}
-        />
+        <View>
+          <TextInput
+            style={[styles.input, formErrors.recipeName && styles.inputError]}
+            placeholder="Recipe Name"
+            value={recipeName}
+            onChangeText={setRecipeName}
+            onFocus={() => setFormErrors({})}
+          />
+          {formErrors.recipeName && (
+            <Text style={styles.errorText}>{formErrors.recipeName}</Text>
+          )}
+        </View>
         <View style={styles.imagePickerContainer}>
           {recipeImagePreview ? (
             <Image
@@ -188,48 +258,72 @@ const NewRecipeScreen = () => {
             </TouchableOpacity>
           )}
         </View>
-        <TextInput
-          style={styles.input}
-          placeholder="Number of Servings"
-          value={numberOfServings}
-          onChangeText={setNumberOfServings}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Prep Time"
-          value={prepTime}
-          onChangeText={setPrepTime}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Cook Time"
-          value={cookTime}
-          onChangeText={setCookTime}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Calories"
-          value={calories}
-          onChangeText={setCalories}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={[styles.input, {height: 100}]}
-          placeholder="Description"
-          value={recipeDescription}
-          onChangeText={setRecipeDescription}
-          multiline
-          numberOfLines={4}
-        />
+        <View>
+          <TextInput
+            style={[styles.input, formErrors.numberOfServings && styles.inputError]}
+            placeholder="Number of Servings"
+            value={numberOfServings}
+            onChangeText={setNumberOfServings}
+          />
+          {formErrors.numberOfServings && (
+            <Text style={styles.errorText}>{formErrors.numberOfServings}</Text>
+          )}
+        </View>
+        <View>
+          <TextInput
+            style={[styles.input, formErrors.prepTime && styles.inputError]}
+            placeholder="Prep Time"
+            value={prepTime}
+            onChangeText={setPrepTime}
+          />
+          {formErrors.prepTime && (
+            <Text style={styles.errorText}>{formErrors.prepTime}</Text>
+          )}
+        </View>
+        <View>
+          <TextInput
+            style={[styles.input, formErrors.cookTime && styles.inputError]}
+            placeholder="Cook Time"
+            value={cookTime}
+            onChangeText={setCookTime}
+          />
+          {formErrors.cookTime && (
+            <Text style={styles.errorText}>{formErrors.cookTime}</Text>
+          )}
+        </View>
+        <View>
+          <TextInput
+            style={[styles.input, formErrors.calories && styles.inputError]}
+            placeholder="Calories"
+            value={calories}
+            onChangeText={setCalories}
+          />
+          {formErrors.calories && (
+            <Text style={styles.errorText}>{formErrors.calories}</Text>
+          )}
+        </View>
+        <View>
+          <TextInput
+            style={[
+              styles.input,
+              formErrors.recipeDescription && styles.inputError,
+              {height: 100},
+            ]}
+            placeholder="Cook Time"
+            value={recipeDescription}
+            onChangeText={setRecipeDescription}
+            multiline
+          />
+          {formErrors.recipeDescription && (
+            <Text style={styles.errorText}>{formErrors.recipeDescription}</Text>
+          )}
+        </View>
         <CIngredientInputRow
           onChange={setIngredients}
           ingredients={ingredients}
+          errors={ingredientErrors}
         />
-        <View
-          style={styles.buttonContainer}>
+        <View style={styles.buttonContainer}>
           <CustomButton
             label="Add Ingredient"
             onPress={handleAddIngredient}
@@ -301,6 +395,17 @@ const styles = StyleSheet.create({
     width: 350,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  inputError: {
+    borderColor: 'red',
+    backgroundColor: '#ffcccc66',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginLeft: 4,
+    marginTop: -4,
+    marginBottom: 8,
   },
 });
 
