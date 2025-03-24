@@ -53,3 +53,36 @@ export const getImageSource = (imagePath: string): string => {
 
   return '';
 };
+
+
+/**
+ * Delete an image using the image path stored in the recipe table
+ * @param imagePath The relative path stored in the recipe table
+ * @returns Object indicating success/failure and any error
+ */
+export const deleteImageFromDocuments = async (imagePath: string): Promise<{success: boolean; error?: Error}> => {
+  try {
+    // Return early if no image path is provided
+    if (!imagePath) {
+      return { success: false, error: new Error('No image path provided') };
+    }
+
+    // Get the absolute path to the image
+    const absoluteImagePath = getImageSource(imagePath);
+
+    // Check if file exists
+    const fileExists = await RNFS.exists(absoluteImagePath);
+
+    if (fileExists) {
+      // Delete the file
+      await RNFS.unlink(absoluteImagePath);
+      return { success: true };
+    } else {
+      // File doesn't exist, consider this a success since we wanted it gone anyway
+      return { success: true };
+    }
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    return { success: false, error: error as Error };
+  }
+};

@@ -1,38 +1,41 @@
-import {Text, View, StyleSheet, TouchableOpacity, Image} from 'react-native';
-import React, {useEffect, useMemo} from 'react';
+import {Text, View, StyleSheet, TouchableOpacity, Image, RefreshControl} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {RecipeStackParamList} from '../navigation/navigationData';
 import {FlatList} from 'react-native-gesture-handler';
 import {RecipeActions} from '../utils/db/recipeActions';
 import {RecipeData} from '../utils/dataTypes';
 import Icon from '@react-native-vector-icons/ionicons';
-import { getImageSource } from '../utils/fs/addImages';
+import { getImageSource } from '../utils/fs/handleImages';
 
 function RecipeListScreen() {
   const navigation = useNavigation<NavigationProp<RecipeStackParamList>>();
 
-  const [data, setData] = React.useState<RecipeData[]>([]);
+  const [data, setData] = useState<RecipeData[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const fetchUserId = async () => {
+    setRefreshing(true);
+    const recipeData = await RecipeActions.getAllRecipes();
+    if (recipeData) {
+      const typedData = recipeData.map(recipe => ({
+        id: recipe.id,
+        name: recipe.name || '', // Convert null to empty string
+        image: recipe.image || '',
+        description: recipe.description || '',
+        numberOfServings: recipe.numberOfServings || 0,
+        prepTime: recipe.prepTime || 0,
+        cookTime: recipe.cookTime || 0,
+        calories: recipe.calories || 0,
+        favorite: recipe.favorite || false,
+        user: recipe.user || 0,
+      })) as RecipeData[];
+      setData(typedData);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      const recipeData = await RecipeActions.getAllRecipes();
-      if (recipeData) {
-        const typedData = recipeData.map(recipe => ({
-          id: recipe.id,
-          name: recipe.name || '', // Convert null to empty string
-          image: recipe.image || '',
-          description: recipe.description || '',
-          numberOfServings: recipe.numberOfServings || 0,
-          prepTime: recipe.prepTime || 0,
-          cookTime: recipe.cookTime || 0,
-          calories: recipe.calories || 0,
-          favorite: recipe.favorite || false,
-          user: recipe.user || 0,
-        })) as RecipeData[];
-        setData(typedData);
-      }
-    };
-
     fetchUserId();
   }, []);
 
@@ -52,6 +55,12 @@ function RecipeListScreen() {
         showsVerticalScrollIndicator={false}
         data={memoizedData}
         keyExtractor={item => item.id.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={fetchUserId}
+          />
+        }
         renderItem={({item}) => (
           <TouchableOpacity
             style={styles.listItem}

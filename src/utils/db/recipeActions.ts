@@ -93,4 +93,13 @@ export class RecipeActions {
       .returning();
     return deletedIngredient;
   }
+
+  // Get all ingredients for a recipe
+  static async getIngredientsForRecipe(recipeId: number) {
+    const recipeIngredients = await db
+      .select()
+      .from(ingredient)
+      .where(eq(ingredient.recipe, recipeId));
+    return recipeIngredients;
+  }
 }

@@ -22,7 +22,7 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
 }) => {
   // Process errors to organize them by ingredient index
   const processErrors = () => {
-    let generalErrors: string = '';
+    const generalErrors: Record<number, string> = {};
     const fieldErrors: Record<number, Record<string, string>> = {};
 
     Object.entries(errors).forEach(([key, errorMessage]) => {
@@ -40,8 +40,12 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
           }
         }
       } else {
-        if(errorMessage !== null) {
-          generalErrors = errorMessage['0'];
+        if (errorMessage !== null && typeof errorMessage === 'object') {
+          // Handle general error for specific ingredient index
+          const index = parseInt(key, 10);
+          if (!isNaN(index)) {
+            generalErrors[index] = errorMessage['0'];
+          }
         }
       }
     });
@@ -114,7 +118,7 @@ const CIngredientInputRow: React.FC<CIngredientInputRowProps> = ({
             </View>
             {hasGeneralError && (
               <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{generalErrors}</Text>
+                <Text style={styles.errorText}>{hasGeneralError}</Text>
               </View>
             )}
           </View>

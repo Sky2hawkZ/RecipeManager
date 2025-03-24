@@ -19,7 +19,7 @@ import {RecipeStackParamList} from '../navigation/navigationData';
 import {RecipeActions} from '../utils/db/recipeActions';
 import CIngredientInputRow from '../components/molecules/CIngredientInputRow';
 import CustomButton from '../components/atoms/CButton';
-import {saveImageToDocuments} from '../utils/fs/addImages';
+import {saveImageToDocuments} from '../utils/fs/handleImages';
 import {
   validateRecipeForm,
   validateIngredientRows,
